@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>TL de Canto</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root {
+      --gris-fondo: #242422;
+      --gris-caja: #363632;
+      --beige-texto: #ECE8D9;
+      --amarillo-acento: #F7C873;
+      --azul-pat: #444cf7;
+      --gris-hover: #45453c;
+      --checker-bg: #29292e;
+    }
+    html, body {
+      min-height: 100dvh;
+      margin: 0;
+      padding: 0;
+      font-family: 'IBM Plex Sans', 'Inter', Arial, sans-serif;
+      background: #e5e5f7;
+      /* Patrón checker adaptado a gama fcyp6 */
+      opacity: 0.97;
+      background-image:
+        linear-gradient(135deg, var(--azul-pat) 22%, transparent 22%),
+        linear-gradient(225deg, var(--azul-pat) 22%, transparent 22%),
+        linear-gradient(45deg, var(--azul-pat) 22%, transparent 22%),
+        linear-gradient(315deg, var(--azul-pat) 22%, #e5e5f7 22%);
+      background-position:  8px 0, 8px 0, 0 0, 0 0;
+      background-size: 16px 16px;
+      background-repeat: repeat;
+    }
+    body {
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      gap: 0;
+    }
+    .container {
+      margin: 0 auto 0 auto;
+      width: 100%;
+      max-width: 520px;
+      background: var(--gris-caja);
+      box-shadow: 0.38em 0.38em 0 0 var(--amarillo-acento);
+      border-radius: 1px;
+      padding: 2.2em 1.2em 1.2em 1.2em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.7em;
+      z-index: 2;
+    }
+    .inputs {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1.1em;
+      align-items: center;
+    }
+    input, textarea {
+      width: 100%;
+      font-family: inherit;
+      font-size: 1.1em;
+      padding: 0.9em 1em;
+      border: none;
+      border-radius: 1px;
+      background: #222224;
+      color: var(--beige-texto);
+      outline: none;
+      box-sizing: border-box;
+      margin-bottom: 0.06em;
+      transition: background 0.15s;
+    }
+    input:focus, textarea:focus {
+      background: var(--gris-hover);
+    }
+    .botones {
+      display: flex;
+      gap: 1em;
+      width: 100%;
+      justify-content: center;
+      margin-top: .2em;
+      margin-bottom: .2em;
+    }
+    button {
+      background: var(--amarillo-acento);
+      color: var(--gris-fondo);
+      font-family: inherit;
+      border: none;
+      border-radius: 1px;
+      font-size: 1.09em;
+      padding: 0.92em 2.9em;
+      font-weight: bold;
+      letter-spacing: 0.07em;
+      box-shadow: 0.32em 0.32em 0 0 var(--azul-pat);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.7em;
+      transition: background 0.16s, color 0.13s, box-shadow 0.17s, transform 0.2s;
+      will-change: transform, box-shadow;
+    }
+    button:active, button[disabled] {
+      background: #b6a547;
+      color: #222;
+    }
+    button:hover:enabled {
+      background: #d1ceac;
+      color: var(--gris-caja);
+      box-shadow: 0.5em 0.5em 0 0 var(--amarillo-acento);
+    }
+    /* TL fuera del container, ocupa más ancho */
+    .tl-area {
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      margin-top: 2.8em;
+      margin-bottom: 1.7em;
+    }
+    .tl {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.6em;
+      align-items: stretch;
+    }
+    .grabacion {
+      background: var(--checker-bg);
+      color: var(--beige-texto);
+      border-radius: 0.7em;
+      margin: 0 auto;
+      padding: 1.3em 1.6em 1.3em 1.6em;
+      box-shadow: 0 2px 15px #2224, 0.14em 0.14em 0 0 var(--amarillo-acento);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4em;
+      font-size: 1.1em;
+      border: none;
+      position: relative;
+    }
+    .grabacion .titulo {
+      font-weight: bold;
+      font-size: 1.17em;
+      margin-bottom: .14em;
+    }
+    .grabacion .fecha {
+      font-size: .95em;
+      color: #beb9ab;
+      margin-bottom: .14em;
+      font-weight: 400;
+    }
+    .grabacion .comentario {
+      color: var(--amarillo-acento);
+      font-size: 1em;
+      font-style: italic;
+      margin-bottom: .11em;
+      opacity: 0.97;
+    }
+    /* Audio custom player */
+    .grabacion audio {
+      width: 220px;
+      height: 39px;
+      margin: 0.5em auto 0.1em auto;
+      background: var(--gris-caja);
+      border-radius: 9px;
+      box-shadow: 0 0 0 2.5px var(--amarillo-acento);
+      outline: none;
+      accent-color: var(--amarillo-acento);
+      transition: box-shadow 0.19s;
+    }
+    /* Algunos navegadores permiten esto: */
+    audio::-webkit-media-controls-panel { background: var(--gris-caja); border-radius: 9px; }
+    audio::-webkit-media-controls-play-button { filter: brightness(0.98) saturate(1.5) hue-rotate(15deg); }
+    audio::-webkit-media-controls-current-time-display, audio::-webkit-media-controls-time-remaining-display {
+      color: var(--amarillo-acento);
+      font-family: inherit;
+      font-size: 1em;
+    }
+    audio::-webkit-media-controls-timeline {
+      background: var(--beige-texto);
+      border-radius: 5px;
+    }
+    /* Para Firefox */
+    audio::-moz-focus-outer { border: 0; }
+    /* Responsive */
+    @media (max-width: 600px) {
+      .container { max-width: 98vw; padding: 1em 0.2em 0.4em 0.2em; }
+      .tl { max-width: 98vw; }
+      .grabacion { padding: 1.1em 0.5em 1em 0.5em; }
+      .grabacion audio { width: 98vw; min-width: 120px; max-width: 97vw; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="inputs">
+      <input id="titulo" maxlength="64" placeholder="Título..." autocomplete="off">
+      <input id="comentario" maxlength="80" placeholder="Comentario (opcional)" autocomplete="off">
+    </div>
+    <div class="botones">
+      <button id="btn-grabar"><span>🎙️</span><span>Grabar</span></button>
+      <button id="btn-guardar" disabled><span>💾</span><span>Guardar</span></button>
+    </div>
+  </div>
+  <div class="tl-area">
+    <div class="tl" id="tl"></div>
+  </div>
+  <script>
+    // Utilidad selector
+    const $ = sel => document.querySelector(sel);
+
+    // Estado
+    let mediaRecorder, audioChunks = [], audioBlob = null;
+
+    // Elementos
+    const btnGrabar = $('#btn-grabar');
+    const btnGuardar = $('#btn-guardar');
+    const tl = $('#tl');
+    const tituloInput = $('#titulo');
+    const comentarioInput = $('#comentario');
+
+    // Carga TL inicial
+    document.addEventListener('DOMContentLoaded', mostrarTL);
+
+    // Grabación audio
+    btnGrabar.addEventListener('click', async () => {
+      if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+        await iniciarGrabacion();
+      } else if (mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        btnGrabar.querySelector('span:last-child').textContent = 'Grabar';
+        btnGrabar.disabled = true; // evita doble click
+      }
+    });
+
+    async function iniciarGrabacion() {
+      audioChunks = [];
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstart = () => {
+          btnGrabar.querySelector('span:last-child').textContent = 'Grabando...';
+          btnGrabar.disabled = false;
+          btnGuardar.disabled = true;
+        };
+        mediaRecorder.onstop = () => {
+          audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          btnGrabar.querySelector('span:last-child').textContent = 'Grabar';
+          btnGrabar.disabled = false;
+          btnGuardar.disabled = false;
+        };
+        mediaRecorder.start();
+      } catch (err) {
+        alert('No se pudo acceder al micro: ' + err.message);
+      }
+    }
+
+    // Guardar grabación
+    btnGuardar.addEventListener('click', () => {
+      if (!audioBlob) return;
+      const titulo = tituloInput.value.trim();
+      const comentario = comentarioInput.value.trim();
+      const fecha = Date.now();
+      const id = 'canto_' + fecha;
+      guardarAudioBlob(id, audioBlob);
+      const nueva = { id, ...(titulo && {titulo}), ...(comentario && {comentario}), fecha };
+      guardarMetaGrabacion(nueva);
+      // Reset
+      audioBlob = null;
+      btnGuardar.disabled = true;
+      tituloInput.value = "";
+      comentarioInput.value = "";
+      mostrarTL();
+    });
+
+    // Guardado de audio y metadatos en localStorage
+    function guardarAudioBlob(id, blob) {
+      const reader = new FileReader();
+      reader.onload = () => localStorage.setItem('audio_' + id, reader.result);
+      reader.readAsDataURL(blob);
+    }
+    function guardarMetaGrabacion(data) {
+      let tl = JSON.parse(localStorage.getItem('tl_canto') || '[]');
+      tl.unshift(data);
+      localStorage.setItem('tl_canto', JSON.stringify(tl));
+    }
+
+    // Mostrar Timeline
+    function mostrarTL() {
+      const tlArr = JSON.parse(localStorage.getItem('tl_canto') || '[]');
+      tl.innerHTML = tlArr.length
+        ? tlArr.map(g =>
+          `<div class="grabacion">
+            ${g.titulo ? `<div class="titulo">${g.titulo}</div>` : ''}
+            <div class="fecha">${toFecha(g.fecha)}</div>
+            ${g.comentario ? `<div class="comentario">${g.comentario}</div>` : ''}
+            <audio controls src="${getAudioUrl(g.id)}"></audio>
+          </div>`
+        ).join('')
+        : '<div style="color:#444cf7;opacity:.7;text-align:center;padding:2em 0;">No hay grabaciones todavía.</div>';
+    }
+    function getAudioUrl(id) {
+      const dataUrl = localStorage.getItem('audio_' + id);
+      return dataUrl || '';
+    }
+    function toFecha(d) {
+      const fecha = new Date(d);
+      return fecha.toLocaleString('es-ES', {
+        year: '2-digit', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    // Accesibilidad: limpiar si refrescas
+    window.addEventListener('beforeunload', () => {
+      audioBlob = null;
+      btnGuardar.disabled = true;
+    });
+  </script>
+</body>
+</html>

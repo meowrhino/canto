@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>🎤 Canto TL</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root {
+      --gris-fondo: #242422;
+      --pattern: #57564F;
+      --gris-caja: #363632;
+      --beige-texto: #ECE8D9;
+      --amarillo-acento: #F7C873;
+      --amarillo-btn-dark: #A89037;
+      --shadow-strong: #A89037;
+      --gris-hover: #45453c;
+    }
+    html, body {
+      min-height: 100dvh;
+      margin: 0;
+      padding: 0;
+      font-family: 'IBM Plex Sans', 'Inter', Arial, sans-serif;
+      background: var(--gris-fondo);
+      color: var(--beige-texto);
+      /* Patrón fondo */
+      background-image: radial-gradient(var(--pattern) 1.2px, transparent 1.2px);
+      background-size: 22px 22px;
+    }
+    body {
+      min-height: 100dvh;
+      min-width: 100vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+    }
+    .caja-canto {
+      width: clamp(270px, 62vw, 430px);
+      background: var(--gris-caja);
+      color: var(--beige-texto);
+      border-radius: 1px;
+      box-shadow: 0.38em 0.38em 0 0 var(--amarillo-acento);
+      padding: 2.3em 1.2em 1.2em 1.2em;
+      margin: 0 auto 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.4em;
+      font-size: 1.1em;
+    }
+    .inputs {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+      align-items: center;
+    }
+    input, textarea {
+      width: 100%;
+      font-family: inherit;
+      font-size: 1.07em;
+      padding: 0.8em 1em;
+      border: none;
+      border-radius: 1px;
+      background: #2c2c27;
+      color: var(--beige-texto);
+      margin-bottom: 0.1em;
+      outline: none;
+      box-sizing: border-box;
+      transition: background 0.17s;
+    }
+    input:focus, textarea:focus {
+      background: var(--gris-hover);
+    }
+    .botones {
+      display: flex;
+      gap: 1.1em;
+      width: 100%;
+      justify-content: center;
+    }
+    button {
+      background: var(--amarillo-acento);
+      color: var(--gris-fondo);
+      font-family: inherit;
+      border: none;
+      border-radius: 1px;
+      font-size: 1em;
+      padding: 0.8em 2.4em;
+      font-weight: bold;
+      letter-spacing: 0.07em;
+      box-shadow: 0.38em 0.38em 0 0 var(--shadow-strong);
+      cursor: pointer;
+      transition: background 0.18s, color 0.13s, box-shadow 0.18s, transform 0.22s;
+      will-change: transform, box-shadow;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.7em;
+    }
+    button:active, button[disabled] {
+      background: var(--amarillo-btn-dark);
+      color: var(--beige-texto);
+    }
+    button:hover:enabled {
+      background: #f8f3ce;
+      color: var(--gris-fondo);
+      box-shadow: 0.6em 0.6em 0 0 var(--amarillo-acento);
+    }
+    .tl {
+      width: 100%;
+      margin-top: 2.1em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.1em;
+    }
+    .grabacion {
+      background: #2b2b25;
+      width: 99%;
+      padding: 0.95em 1em 1.1em 1em;
+      border-radius: 1px;
+      box-shadow: 0.17em 0.17em 0 0 var(--amarillo-acento);
+      margin-bottom: 0.2em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4em;
+    }
+    .grabacion .fecha {
+      font-size: .85em;
+      color: #beb9ab;
+      font-weight: 300;
+    }
+    .grabacion .comentario {
+      color: #f7c873;
+      font-size: 1em;
+      font-style: italic;
+      margin: 0.1em 0 0 0;
+      word-break: break-word;
+      opacity: 0.97;
+    }
+    audio {
+      width: 185px;
+      outline: none;
+      border-radius: 1px;
+      margin-top: .3em;
+    }
+    .descarga-json {
+      margin-top: 1.4em;
+      background: #57564f;
+      color: var(--amarillo-acento);
+      border: none;
+      border-radius: 1px;
+      font-size: 0.99em;
+      padding: 0.55em 1.3em;
+      cursor: pointer;
+      box-shadow: 0.19em 0.19em 0 0 var(--shadow-strong);
+      transition: background 0.15s;
+      font-family: inherit;
+      letter-spacing: 0.04em;
+    }
+    .descarga-json:hover {
+      background: var(--amarillo-acento);
+      color: var(--gris-caja);
+    }
+    @media (max-width: 650px) {
+      .caja-canto { width: 98vw; padding-left: 0.7em; }
+      .grabacion { width: 97vw; }
+    }
+  </style>
+</head>
+<body>
+  <div class="caja-canto">
+    <div class="inputs">
+      <input id="titulo" maxlength="64" placeholder="Título..." autocomplete="off">
+      <input id="comentario" maxlength="80" placeholder="Comentario (opcional)" autocomplete="off">
+    </div>
+    <div class="botones">
+      <button id="btn-grabar"><span>🎙️</span><span>Grabar</span></button>
+      <button id="btn-guardar" disabled><span>💾</span><span>Guardar</span></button>
+    </div>
+    <div class="tl" id="tl"></div>
+    <button class="descarga-json" onclick="descargarJSON()">Descargar .json</button>
+  </div>
+  <script>
+    // Utilidad selector
+    const $ = sel => document.querySelector(sel);
+
+    // Estado
+    let mediaRecorder, audioChunks = [], audioBlob = null;
+
+    // Elementos
+    const btnGrabar = $('#btn-grabar');
+    const btnGuardar = $('#btn-guardar');
+    const tl = $('#tl');
+    const tituloInput = $('#titulo');
+    const comentarioInput = $('#comentario');
+
+    // Carga TL inicial
+    document.addEventListener('DOMContentLoaded', mostrarTL);
+
+    // Grabación audio
+    btnGrabar.addEventListener('click', async () => {
+      if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+        await iniciarGrabacion();
+      } else if (mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        btnGrabar.querySelector('span:last-child').textContent = 'Grabar';
+        btnGrabar.disabled = true; // evitas doble click
+      }
+    });
+
+    async function iniciarGrabacion() {
+      audioChunks = [];
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstart = () => {
+          btnGrabar.querySelector('span:last-child').textContent = 'Grabando...';
+          btnGrabar.disabled = false;
+          btnGuardar.disabled = true;
+        };
+        mediaRecorder.onstop = () => {
+          audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          btnGrabar.querySelector('span:last-child').textContent = 'Grabar';
+          btnGrabar.disabled = false;
+          btnGuardar.disabled = false;
+        };
+        mediaRecorder.start();
+      } catch (err) {
+        alert('No se pudo acceder al micro: ' + err.message);
+      }
+    }
+
+    // Guardar grabación
+    btnGuardar.addEventListener('click', () => {
+      if (!audioBlob) return;
+      const titulo = tituloInput.value.trim();
+      if (!titulo) return alert("Ponle un título.");
+      const comentario = comentarioInput.value.trim();
+      const fecha = Date.now();
+      const id = 'canto_' + fecha;
+      guardarAudioBlob(id, audioBlob);
+      const nueva = { id, titulo, comentario, fecha };
+      guardarMetaGrabacion(nueva);
+      // Reset
+      audioBlob = null;
+      btnGuardar.disabled = true;
+      tituloInput.value = "";
+      comentarioInput.value = "";
+      mostrarTL();
+    });
+
+    // Guardado de audio y metadatos en localStorage
+    function guardarAudioBlob(id, blob) {
+      const reader = new FileReader();
+      reader.onload = () => localStorage.setItem('audio_' + id, reader.result);
+      reader.readAsDataURL(blob);
+    }
+    function guardarMetaGrabacion(data) {
+      let tl = JSON.parse(localStorage.getItem('tl_canto') || '[]');
+      tl.unshift(data);
+      localStorage.setItem('tl_canto', JSON.stringify(tl));
+    }
+
+    // Mostrar Timeline
+    function mostrarTL() {
+      const tlArr = JSON.parse(localStorage.getItem('tl_canto') || '[]');
+      tl.innerHTML = tlArr.length
+        ? tlArr.map(g =>
+          `<div class="grabacion">
+            <div style="font-weight:bold;">${g.titulo || 'Sin título'}</div>
+            <div class="fecha">${toFecha(g.fecha)}</div>
+            ${g.comentario ? `<div class="comentario">${g.comentario}</div>` : ''}
+            <audio controls src="${getAudioUrl(g.id)}"></audio>
+          </div>`
+        ).join('')
+        : '<div style="color:#bababa;opacity:.66;text-align:center;padding-top:2em">No hay grabaciones todavía.</div>';
+    }
+    function getAudioUrl(id) {
+      const dataUrl = localStorage.getItem('audio_' + id);
+      return dataUrl || '';
+    }
+    function toFecha(d) {
+      return new Date(d).toLocaleString('es-ES', {year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'});
+    }
+
+    // Descargar TL como .json (para backup/manual backend)
+    function descargarJSON() {
+      const arr = JSON.parse(localStorage.getItem('tl_canto') || '[]');
+      const blob = new Blob([JSON.stringify(arr, null, 2)], {type: "application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "canto-tl.json";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+    }
+
+    // Accesibilidad: guardar si refrescas
+    window.addEventListener('beforeunload', () => {
+      audioBlob = null;
+      btnGuardar.disabled = true;
+    });
+  </script>
+</body>
+</html>

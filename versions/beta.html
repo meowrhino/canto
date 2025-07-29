@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>🎤 Registro de Canto – Meowrhino</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500&display=swap">
+  <style>
+    :root {
+      --bg: #222325;
+      --primary: #fafafa;
+      --accent: #f7c873;
+      --comment: #faebcd;
+      --input-bg: #32333a;
+      --border: #f7c87344;
+      --shadow: 0 8px 28px 0 #0004;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--primary);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 430px;
+      margin: 32px auto 0 auto;
+      background: #28292b;
+      box-shadow: var(--shadow);
+      border-radius: 1.4em;
+      padding: 2.2em 2em 2em 2em;
+    }
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 0.5em;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+      margin-bottom: 2.5em;
+    }
+    input, textarea {
+      font-family: inherit;
+      font-size: 1.1em;
+      padding: 0.7em 1em;
+      border-radius: 1em;
+      border: 1.5px solid var(--border);
+      background: var(--input-bg);
+      color: var(--primary);
+      outline: none;
+      transition: border .2s;
+    }
+    input:focus, textarea:focus {
+      border-color: var(--accent);
+    }
+    button {
+      font-size: 1.08em;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      padding: 0.7em 0;
+      border-radius: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: filter .15s;
+    }
+    button:active { filter: brightness(.93); }
+    .rec-indicator {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: #f64b4b;
+      margin-right: 8px;
+      vertical-align: -2px;
+      animation: blink .8s infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1 }
+      50% { opacity: .3 }
+    }
+    .tl {
+      margin-top: 1.5em;
+    }
+    .grabacion {
+      background: var(--input-bg);
+      margin-bottom: 1.1em;
+      padding: 1em 1.3em;
+      border-radius: 1em;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 4px #0002;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3em;
+      transition: background .17s;
+    }
+    .grabacion:hover { background: #35363b; }
+    .grabacion h3 {
+      font-size: 1.08em;
+      color: var(--accent);
+      margin: 0 0 0.12em 0;
+      font-weight: 500;
+      letter-spacing: .02em;
+    }
+    .grabacion .fecha {
+      font-size: .89em;
+      color: #bdbdbd;
+      font-weight: 300;
+    }
+    .grabacion .comentario {
+      color: var(--comment);
+      font-size: 1em;
+      font-style: italic;
+      margin: 0.1em 0 0 0;
+      word-break: break-word;
+    }
+    .grabacion .audio-controls {
+      margin-top: .7em;
+      display: flex;
+      align-items: center;
+      gap: 1em;
+    }
+    audio {
+      width: 170px;
+      outline: none;
+      border-radius: .7em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎤 Registro de Canto</h1>
+    <form id="form-canto" autocomplete="off">
+      <input type="text" id="titulo" maxlength="64" placeholder="Título..." required>
+      <input type="text" id="comentario" maxlength="100" placeholder="Comentario (opcional)">
+      <div>
+        <button type="button" id="btn-grabar">🎙️ Empezar a grabar</button>
+        <span id="estado-grab" style="margin-left:12px;"></span>
+      </div>
+      <button type="submit" id="btn-guardar" disabled>Guardar grabación</button>
+    </form>
+    <div class="tl" id="tl"></div>
+  </div>
+  <script>
+    // Utilities
+    const $ = sel => document.querySelector(sel);
+    const toFecha = d => new Date(d).toLocaleString('es-ES', {year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit'});
+
+    // --- State ---
+    let mediaRecorder, audioChunks = [];
+    let audioBlob = null;
+
+    // --- UI Elements ---
+    const btnGrabar = $('#btn-grabar');
+    const btnGuardar = $('#btn-guardar');
+    const estado = $('#estado-grab');
+    const form = $('#form-canto');
+    const tl = $('#tl');
+
+    // --- Load TL on startup ---
+    document.addEventListener('DOMContentLoaded', mostrarTimeline);
+
+    // --- Grabación Audio ---
+    btnGrabar.addEventListener('click', async () => {
+      if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+        await iniciarGrabacion();
+      } else if (mediaRecorder.state === 'recording') {
+        mediaRecorder.pause();
+        estado.innerHTML = '⏸️ Pausado';
+        btnGrabar.textContent = '▶️ Reanudar';
+      } else if (mediaRecorder.state === 'paused') {
+        mediaRecorder.resume();
+        estado.innerHTML = '<span class="rec-indicator"></span>Grabando...';
+        btnGrabar.textContent = '⏹️ Parar';
+      }
+    });
+
+    async function iniciarGrabacion() {
+      if (!navigator.mediaDevices) return alert('Tu navegador no soporta grabación de audio.');
+      audioChunks = [];
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstart = () => {
+          estado.innerHTML = '<span class="rec-indicator"></span>Grabando...';
+          btnGrabar.textContent = '⏹️ Parar';
+          btnGuardar.disabled = true;
+        };
+        mediaRecorder.onpause = () => {
+          estado.innerHTML = '⏸️ Pausado';
+        };
+        mediaRecorder.onresume = () => {
+          estado.innerHTML = '<span class="rec-indicator"></span>Grabando...';
+        };
+        mediaRecorder.onstop = () => {
+          audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          estado.innerHTML = '🎧 Grabación lista';
+          btnGuardar.disabled = false;
+          btnGrabar.textContent = '🎙️ Empezar a grabar';
+        };
+        mediaRecorder.start();
+      } catch (err) {
+        alert('No se pudo acceder al micro: ' + err.message);
+      }
+    }
+
+    // Parar grabación si está grabando
+    btnGrabar.addEventListener('dblclick', () => {
+      if (mediaRecorder && (mediaRecorder.state === 'recording' || mediaRecorder.state === 'paused')) {
+        mediaRecorder.stop();
+      }
+    });
+
+    // Guardar grabación
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (!audioBlob) return alert('No hay grabación lista.');
+      // Guardar audio en local: lo simulamos con un blob URL + metadatos en localStorage (o indexedDB si luego quieres)
+      const titulo = $('#titulo').value.trim();
+      const comentario = $('#comentario').value.trim();
+      const fecha = Date.now();
+      const id = 'canto_' + fecha;
+      // Guarda el blob en un objeto de blobs, referenciado por id
+      guardarAudioBlob(id, audioBlob);
+      // Guarda la metadata en timeline
+      const nueva = { id, titulo, comentario, fecha };
+      guardarMetaGrabacion(nueva);
+      // Reset
+      audioBlob = null;
+      btnGuardar.disabled = true;
+      form.reset();
+      estado.innerHTML = '';
+      mostrarTimeline();
+    });
+
+    // --- Guardado de audio y metadatos ---
+    function guardarAudioBlob(id, blob) {
+      // Convertir a base64 para simular guardar (NO recomendado con archivos largos, para prod usar indexedDB)
+      const reader = new FileReader();
+      reader.onload = () => {
+        localStorage.setItem('audio_' + id, reader.result);
+      };
+      reader.readAsDataURL(blob);
+    }
+    function guardarMetaGrabacion(data) {
+      let tl = JSON.parse(localStorage.getItem('tl_canto') || '[]');
+      tl.unshift(data);
+      localStorage.setItem('tl_canto', JSON.stringify(tl));
+    }
+
+    // --- Mostrar Timeline ---
+    function mostrarTimeline() {
+      const tlArr = JSON.parse(localStorage.getItem('tl_canto') || '[]');
+      tl.innerHTML = tlArr.length
+        ? tlArr.map(g =>
+          `<div class="grabacion">
+            <h3>${g.titulo || 'Sin título'}</h3>
+            <div class="fecha">${toFecha(g.fecha)}</div>
+            ${g.comentario ? `<div class="comentario">"${g.comentario}"</div>` : ''}
+            <div class="audio-controls">
+              <audio controls src="${getAudioUrl(g.id)}"></audio>
+            </div>
+          </div>`
+        ).join('')
+        : '<p style="color:#ccc;text-align:center;opacity:.7">No hay grabaciones todavía.</p>';
+    }
+    function getAudioUrl(id) {
+      const dataUrl = localStorage.getItem('audio_' + id);
+      return dataUrl || '';
+    }
+
+    // Limpiar grabación previa si refrescas y no has guardado
+    window.addEventListener('beforeunload', () => {
+      audioBlob = null;
+      btnGuardar.disabled = true;
+    });
+  </script>
+</body>
+</html>
